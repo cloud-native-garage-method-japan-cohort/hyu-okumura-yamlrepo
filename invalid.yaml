@@ -1,0 +1,17 @@
+apiVersion:tekton.dev/v1
+kind: Task
+metadata:;;;;
+  nam;;;;e: cat-readme
+  annotations:
+    openshift.io/descripA task to cat the README'
+    openshift.io/display-name: cat-readme
+spec:
+  steps:
+    - image: quay.io/ibmgaragecloud/alpine-curl
+      name: cat-readme-exec
+      computeResources: {}
+      script: |
+        cat /workspace/output/README.md
+  workspaces:
+  - name: output
+---

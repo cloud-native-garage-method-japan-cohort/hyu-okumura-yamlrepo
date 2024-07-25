@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: cat-readme
+  annotations:
+    openshift.io/description: 'A task to cat the README'
+    openshift.io/display-name: cat-readme
+spec:
+  steps:
+    - image: quay.io/ibmgaragecloud/alpine-curl
+      name: cat-readme-exec
+      computeResources: {}
+      script: |
+        cat /workspace/output/README.md
+  workspaces:
+  - name: output
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  annotations:
+      app.openshift.io/runtime: nodejs
+  name: <First-name>-<Last-name>-pipeline-from-scratch-pipeline
+spec:
+  workspaces:
+    - name: pipeline-shared-data
+      description: |
+        This workspace stores the cloned repository and is available to all steps
+  tasks:
+    - name: clone-repository
+      params:
+        - name: url
+          value: https://github.com/upslopeio/express-sample-app
+      taskRef:
+        kind: Task
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: pipeline-shared-data
+    - name: execute-cat-readme
+      runAfter:
+        - clone-repository
+      taskRef:
+        kind: Task
+        name: cat-readme
+      workspaces:
+        - name: output
+          workspace: pipeline-shared-data
